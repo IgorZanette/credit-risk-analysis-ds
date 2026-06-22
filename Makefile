@@ -1,19 +1,31 @@
 PYTHON     = python
+VENV       = .venv
+VENV_PY    = $(VENV)/Scripts/python
 DATA_RAW   = data/raw/credit_risk_dataset.csv
 DATA_CLEAN = data/processed/credit_clean.csv
 
-.PHONY: all install data notebooks dashboard report clean help
+.PHONY: all venv install data notebooks dashboard report report-html clean help
 
 help:
 	@echo ""
-	@echo "  make install    Instala as dependencias via pip"
+	@echo "  make venv       Cria ambiente virtual .venv e instala dependencias"
+	@echo "  make install    Instala dependencias no ambiente ativo"
 	@echo "  make data       Gera data/processed/credit_clean.csv"
 	@echo "  make notebooks  Executa os 3 notebooks em ordem"
 	@echo "  make dashboard  Inicia o dashboard (localhost:8501)"
-	@echo "  make report      Exporta o relatorio para PDF (requer pandoc)"
-	@echo "  make report-html Exporta o relatorio para HTML (sem pandoc)"
-	@echo "  make all        install + data + notebooks"
+	@echo "  make report     Exporta o relatorio para PDF"
+	@echo "  make all        venv + data + notebooks"
 	@echo ""
+
+venv:
+	$(PYTHON) -m venv $(VENV)
+	$(VENV_PY) -m pip install --upgrade pip
+	$(VENV_PY) -m pip install -r requirements.txt
+	$(VENV_PY) -m playwright install chromium
+	@echo ""
+	@echo "Ambiente criado. Ative com:"
+	@echo "  Windows: .venv\\Scripts\\activate"
+	@echo "  Linux/Mac: source .venv/bin/activate"
 
 install:
 	pip install -r requirements.txt
@@ -48,7 +60,7 @@ report:
 report-html:
 	$(PYTHON) -m jupyter nbconvert --to html --no-input reports/relatorio.ipynb --output relatorio --output-dir reports/
 
-all: install data notebooks
+all: venv data notebooks
 
 clean:
 	rm -f $(DATA_CLEAN)
